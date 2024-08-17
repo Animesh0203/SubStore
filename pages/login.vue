@@ -1,35 +1,57 @@
-<!-- pages/login.vue -->
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-green-50">
-    <div class="bg-white p-8 rounded-none shadow-lg w-full max-w-sm text-center">
-      <h1 class="text-3xl font-bold text-green-600 mb-6">Login</h1>
-      <button
-        @click="login"
-        class="w-full bg-green-600 text-white py-2 px-4 rounded-none hover:bg-green-700 transition-colors duration-300"
-      >
-        Login with Google
-      </button>
-      <p v-if="errorMessage" class="text-red-500 mt-4">{{ errorMessage }}</p>
+    <div>
+      <h1>Login</h1>
+      <button @click="loginWithGoogle">Login with Google</button>
+  
+      <UsernameModal v-if="showModal" :show="showModal" @submit="handleUsernameSubmit" />
     </div>
-  </div>
-</template>
-
-<script setup>
-import { ref } from 'vue'
-import { useNuxtApp } from '#app'
-import { useRouter } from 'vue-router'
-
-const { $signInWithGoogle, $auth } = useNuxtApp()
-const router = useRouter()
-const errorMessage = ref(null)
-
-const login = async () => {
-  try {
-    await $signInWithGoogle()
-    router.push('/profile')
-  } catch (error) {
-    console.error('Error logging in:', error)
-    errorMessage.value = 'Failed to login. Please try again.'
+  </template>
+  
+  <script setup>
+  import { ref } from 'vue'
+  import { useFirebaseAuth, useFirestore } from 'vuefire'
+  import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
+  import { doc, setDoc, getDocs, query, collection, where } from 'firebase/firestore'
+  import UsernameModal from '~/components/UsernameModal.vue'
+  
+  const auth = useFirebaseAuth()
+  const db = useFirestore()
+  const showModal = ref(false)
+  let currentUser = null
+  
+  const loginWithGoogle = async () => {
+    try {
+      const result = await signInWithPopup(auth, new GoogleAuthProvider())
+      currentUser = result.user
+  
+      // Show the username modal
+      showModal.value = true
+    } catch (error) {
+      console.error('Login error:', error)
+    }
   }
-}
-</script>
+  
+  const handleUsernameSubmit = async (username) => {
+    // Check if the username is unique
+    const usernamesQuery = query(collection(db, 'users'), where('username', '==', username))
+    const usernamesSnapshot = await getDocs(usernamesQuery)
+  
+    if (!usernamesSnapshot.empty) {
+      alert('Username is already taken, please choose another one.')
+      return
+    }
+  
+    // Save the username to Firestore under the user's document
+    await setDoc(doc(db, 'users', currentUser.uid), {
+      username: username,
+      email: currentUser.email,
+    })
+  
+    // Close the modal
+    showModal.value = false
+  
+    // Redirect to PostForm
+    navigateTo('/PostForm')
+  }
+  </script>
+  
