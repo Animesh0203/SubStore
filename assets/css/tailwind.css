@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind utilities;
 @tailwind components;
+
+@font-face {
+    font-family: 'CustomFont';
+    src: url('../font/Coolvetica.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+  }

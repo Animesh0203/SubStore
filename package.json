@@ -16,6 +16,7 @@
     "mongoose": "^8.5.3",
     "nuxt": "^3.12.4",
     "nuxt-vuefire": "^1.0.4",
+    "uuid": "^10.0.0",
     "vue": "latest",
     "vuefire": "^3.2.0"
   },

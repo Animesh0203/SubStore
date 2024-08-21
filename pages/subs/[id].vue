@@ -2,15 +2,26 @@
   <div class="flex flex-col items-center py-8">
     <div v-for="post in sortedPosts" :key="post.id" class="w-full max-w-6xl bg-white border-2 border-fresh-green shadow-lg p-6 mb-6">
       <h2 class="text-2xl font-semibold text-fresh-green mb-2">{{ post.title }}</h2>
-      <div class="mb-4">
-        <!-- Veg / Non-Veg Sign -->
-        <div class="flex items-center mb-2">
-          <img v-if="post.featureEnabled" src="../assets/logo/non-veg-icon.png" alt="Veg" width="16" height="24">
-          <img v-else src="../assets/logo/veg-icon.png" alt="NonVeg" width="16" height="24">
-        </div>
-      </div>
+      <p class="text-gray-700 mb-4">{{ post.content }}</p>
       <h3 class="text-sm text-gray-500 mb-4">Posted by: {{ post.authorUsername }}</h3>
 
+      <!-- Display additional data options -->
+      <div class="mb-4">
+        <div v-if="post.multipleOptions && post.multipleOptions.length > 0" class="mb-2">
+          <h4 class="font-medium text-gray-600">Selected Options:</h4>
+          <ul>
+            <li v-for="option in post.multipleOptions" :key="option" class="text-gray-700">- {{ option }}</li>
+          </ul>
+        </div>
+        <div v-if="post.singleOption" class="mb-2">
+          <h4 class="font-medium text-gray-600">Single Option:</h4>
+          <p class="text-gray-700">{{ post.singleOption }}</p>
+        </div>
+        <div v-if="post.toggleOption !== undefined" class="mb-2">
+          <h4 class="font-medium text-gray-600">Toggle Option:</h4>
+          <p class="text-gray-700">{{ post.toggleOption ? 'On' : 'Off' }}</p>
+        </div>
+      </div>
 
       <!-- Upvote and Delete buttons -->
       <div class="flex items-center justify-between">
@@ -25,6 +36,7 @@
           <span>{{ post.upvotes || 0 }}</span>
         </button>
 
+        <button v-if="isAuthor(post)" @click="deletePost(post.id)" class="text-red-500 hover:text-red-700">Delete</button>
       </div>
     </div>
   </div>
